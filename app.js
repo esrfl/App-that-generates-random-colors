@@ -1,21 +1,52 @@
-const cols = document.querySelectorAll('.col')
+const setTextColor = (color) => {
+	return chroma(color).luminance() > 0.5 ? 'black' : 'white'
+}
+
+const setRandomColors = () => {
+	const cols = document.querySelectorAll('.col')
+
+	cols.forEach((col) => {
+		const isLocked = col.querySelector('button').classList.contains('fa-lock')
+		const text = col.querySelector('h2')
+		const button = col.querySelector('button')
+
+		if (!isLocked) {
+			const color = chroma.random()
+
+			// меняем background
+			col.style.background = color
+
+			// записываем значение в h2
+			text.textContent = color
+
+			// меняем цвет h2
+			text.style.color = setTextColor(color)
+
+			// меняем цвет button
+			button.style.color = setTextColor(color)
+		}
+
+	})
+}
+
+const copyToClickboard = (text) => {
+	return navigator.clipboard.writeText(text)
+}
 
 document.addEventListener('keydown', (event) => {
 	event.preventDefault()
-	if (event.code.toLowerCase() === 'space') {
+	if (event.code === 'Space') {
 		setRandomColors()
 	}
 })
 
 
 document.addEventListener('click', (event) => {
-
 	const type = event.target.dataset.type
+	const tagName = event.target.tagName
 
-	if (type === 'lock') {
-		const node = event.target.tagName.toLowerCase() === 'i'
-			? event.target
-			: event.target.children[0]
+	if (type === 'lock' && tagName === 'BUTTON') {
+		const node = event.target
 
 		node.classList.toggle('fa-lock-open')
 		node.classList.toggle('fa-lock')
@@ -25,71 +56,38 @@ document.addEventListener('click', (event) => {
 	}
 })
 
-function generateRandomColor() {
+const Render = () => {
+	const root = document.getElementById('root')
+	const COUNT = 8 // можно менять
+	const Nodes = []
 
-	const hexCodes = '0123456789ABCDEF'
-	let color = ''
-	for (let i = 0; i < 6; i++) {
-		color += hexCodes[Math.floor(Math.random() * hexCodes.length)]
+	// Подготовим нужные элементы
+	for (let i = 0; i < COUNT; i++) {
+		// Создаем div
+		const Element = document.createElement('div')
+		Element.classList.add('col')
+
+		// Создаем кнопку
+		const ButtonLock = document.createElement('button')
+		ButtonLock.classList.add('fa-solid', 'fa-lock-open')
+		ButtonLock.dataset.type = 'lock'
+
+		// Создаем h2
+		const Title = document.createElement('h2')
+		Title.dataset.type = 'copy'
+
+		Element.appendChild(Title)
+		Element.appendChild(ButtonLock)
+
+		Nodes.push(Element)
 	}
-	return '#' + color
+
+	// Добавляем все в <div id="root"></div>
+	root.append(...Nodes)
 }
 
-function copyToClickboard(text) {
-	return navigator.clipboard.writeText(text)
-}
+// создаем элементы в DOM
+Render()
 
-
-function setRandomColors(isInitial) {
-	const colors = isInitial ? getColorsFromHash() : []
-
-	cols.forEach((col, index) => {
-		const islocked = col.querySelector('i').classList.contains('fa-lock')
-		const text = col.querySelector('h2')
-		const button = col.querySelector('button')
-
-		if (islocked) {
-			colors.push(text.textContent)
-			return
-		}
-
-		const color = isInitial
-			? colors[index]
-				? colors[index]
-				: chroma.random()
-			: chroma.random()
-
-		if (!isInitial) {
-			colors.push(color)
-		}
-		text.textContent = color
-		col.style.background = color
-
-		setTextColor(text, color)
-		setTextColor(button, color)
-	})
-
-	updateColorsHash(colors)
-}
-
-function setTextColor(text, color) {
-	const luminance = chroma(color).luminance()
-	text.style.color = luminance > 0.5 ? 'black' : 'white'
-}
-function updateColorsHash(colors = []) {
-	document.location.hash = colors.map(col => {
-		console.log(col)
-		return col.toString().substring(1)
-	})
-		.join('-')
-}
-
-function getColorsFromHash() {
-	if (document.location.hash.length > 1) {
-		return document.location.hash.substring(1).split('-').map(color => '#' + color)
-	}
-	return []
-}
-
-
-setRandomColors(true)
+// Закрашиваем
+setRandomColors()

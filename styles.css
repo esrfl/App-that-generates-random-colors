@@ -4,7 +4,7 @@
 	box-sizing: border-box;
 }
 
-body {
+#root {
 	font-family: 'Roboto', sans-serif;
 	height: 100vh;
 	display: flex;
